@@ -14,22 +14,19 @@ import './app.scss'
 const App = () => {
 
   const state = useSelector((state) => state)
-  const { movies } = state  
+  const { movies } = state
   const dispatch = useDispatch()
   const [searchParams, setSearchParams] = useSearchParams()
   const searchQuery = searchParams.get('search')
+  const [page, setPage] = useState(1)
+  const [lastScrollY, setLastScrollY] = useState(0);
   const [videoKey, setVideoKey] = useState()
   const [isOpen, setOpen] = useState(false)
   const navigate = useNavigate()
-  
-  const closeModal = () => setOpen(false)
-  
-  const closeCard = () => {
-
-  }
 
   const getSearchResults = (query) => {
     if (query !== '') {
+      setPage(1)
       dispatch(fetchMovies(`${ENDPOINT_SEARCH}&query=`+query))
       setSearchParams(createSearchParams({ search: query }))
     } else {
@@ -45,15 +42,14 @@ const App = () => {
 
   const getMovies = () => {
     if (searchQuery) {
-        dispatch(fetchMovies(`${ENDPOINT_SEARCH}&query=`+searchQuery))
+        dispatch(fetchMovies(`${ENDPOINT_SEARCH}&page=`+page+`&query=`+searchQuery))
     } else {
-        dispatch(fetchMovies(ENDPOINT_DISCOVER))
+        dispatch(fetchMovies(`${ENDPOINT_DISCOVER}&page=`+page))
     }
   }
 
   const viewTrailer = (movie) => {
     getMovie(movie.id)
-    if (!videoKey) setOpen(true)
     setOpen(true)
   }
 
@@ -72,20 +68,34 @@ const App = () => {
 
   useEffect(() => {
     getMovies()
-  }, [])
+  }, [page])
+
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrollingDown = window.scrollY > lastScrollY;
+      setLastScrollY(window.scrollY);
+
+      const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 ;
+
+      if ((nearBottom && state.fetchStatus !== 'loading') && isScrollingDown) {
+        setPage(prev => prev + 1)
+      }
+
+    }
+  
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [state.fetchStatus, lastScrollY])
+  
 
   return (
     <div className="App">
       <Header searchMovies={searchMovies} searchParams={searchParams} setSearchParams={setSearchParams} />
-
       <div className="container">
-        {videoKey ? (
-          <YouTubePlayer
-            videoKey={videoKey}
-          />
-        ) : (
-          <div style={{padding: "30px"}}><h6>no trailer available. Try another movie</h6></div>
-        )}
+      <YouTubePlayer videoKey={videoKey} isOpen={isOpen} setOpen={setOpen}/>
+
+
 
         <Routes>
           <Route path="/" element={<Movies movies={movies} viewTrailer={viewTrailer} closeCard={closeCard} />} />
