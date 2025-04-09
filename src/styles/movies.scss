@@ -9,8 +9,7 @@
     .movieList {
         display: flex;
         flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
+        align-items: start;
         margin: 0 auto;
         padding: 0 5px;
 
@@ -47,7 +46,7 @@
         }
     }
 
-    .info_panel {
+    .info_panel {   
         padding: 20% 5% 0;
         color: #fff;
         background: transparent;
@@ -73,10 +72,9 @@
             height: 85px;
             padding: 5px;
             margin-bottom: 5px;
-            overflow: scroll;
+            overflow-y: auto;
             font-size: 0.7rem;
             line-height: 105%;
-    
             @media (max-width: 720px) {
                 height: 60px;
                 padding: 3px;
@@ -90,10 +88,33 @@
                 line-height: 115%;
             }
         }
+
+        
+        ::-webkit-scrollbar {
+            width: 0.5em;
+        }
+    
+        ::-webkit-scrollbar-track {
+            background-color: white; 
+            border-radius: 1em  ; 
+        }
+    
+        ::-webkit-scrollbar-thumb {
+            background-color: #808080;
+            border-radius: 1em;
+            border: 1em solid transparent;
+        }
+    
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #666666;
+        }
     }    
 
     .overlay,
     .info_panel {
+        display: grid;
+        place-items: center;
+        grid-template-rows: minmax(0, 2fr) minmax(0, 0.5fr) minmax(0, 0.5fr) minmax(0, 1fr) minmax(0, 1fr);
         position: absolute;
         top: 0;
         left: 0;
@@ -216,7 +237,6 @@
         }
 
         .info_panel {
-            display: block;
             opacity: 1;
         }
     }
@@ -272,7 +292,6 @@
                 opacity: 0.7;
             }
             .info_panel {
-                display: block;
                 opacity: 1;
             }                
 
