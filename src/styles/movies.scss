@@ -6,6 +6,23 @@
         padding-top: 70px;        
     }
 
+    .movieList {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+        padding: 0 5px;
+
+        @media (max-width: 720px) {
+            padding: 0 2px;        
+        }
+
+        @media (max-width: 480px) {
+            padding: 0 1px;        
+        }
+    }
+
     a {
         color: #1CB5E0;
         text-decoration: none;
