@@ -16,9 +16,12 @@ const App = () => {
 
   const state = useSelector((state) => state)
   const { movies } = state
+  const { movies } = state
   const dispatch = useDispatch()
   const [searchParams, setSearchParams] = useSearchParams()
   const searchQuery = searchParams.get('search')
+  const [page, setPage] = useState(1)
+  const [lastScrollY, setLastScrollY] = useState(0);
   const [page, setPage] = useState(1)
   const [lastScrollY, setLastScrollY] = useState(0);
   const [videoKey, setVideoKey] = useState()
@@ -27,6 +30,7 @@ const App = () => {
 
   const getSearchResults = (query) => {
     if (query !== '') {
+      setPage(1)
       setPage(1)
       dispatch(fetchMovies(`${ENDPOINT_SEARCH}&query=`+query))
       setSearchParams(createSearchParams({ search: query }))
@@ -94,6 +98,9 @@ const App = () => {
     <div className="App">
       <Header searchMovies={searchMovies} searchParams={searchParams} setSearchParams={setSearchParams} />
       <div className="container">
+      <YouTubePlayer videoKey={videoKey} isOpen={isOpen} setOpen={setOpen}/>
+
+
       <YouTubePlayer videoKey={videoKey} isOpen={isOpen} setOpen={setOpen}/>
 
 
