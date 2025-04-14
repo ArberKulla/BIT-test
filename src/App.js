@@ -11,11 +11,15 @@ import WatchLater from './components/WatchLater'
 import YouTubePlayer from './components/YoutubePlayer'
 import './app.scss'
 import { useCallback } from 'react'
+import { throttle } from 'lodash';
+import { useRef } from 'react'
+
 
 const App = () => {
 
   const state = useSelector((state) => state)
-  const { movies } = state
+  const { movies } = state.movies
+  const { fetchStatus } = state.movies
   const dispatch = useDispatch()
   const [searchParams, setSearchParams] = useSearchParams()
   const searchQuery = searchParams.get('search')
@@ -25,16 +29,16 @@ const App = () => {
   const [isOpen, setOpen] = useState(false)
   const navigate = useNavigate()
 
+  
   const getSearchResults = (query) => {
     if (query !== '') {
-      setPage(1)
-      dispatch(fetchMovies(`${ENDPOINT_SEARCH}&query=`+query))
-      setSearchParams(createSearchParams({ search: query }))
+      setSearchParams(createSearchParams({ search: query }));
     } else {
-      dispatch(fetchMovies(ENDPOINT_DISCOVER))
-      setSearchParams()
+      setPage(1);
+      setSearchParams();
     }
   }
+  
 
   const searchMovies = (query) => {
     navigate('/')
@@ -42,15 +46,16 @@ const App = () => {
   }
 
   const getMovies = useCallback(() => {
-    if (searchQuery) {
-      dispatch(fetchMovies(`${ENDPOINT_SEARCH}&page=${page}&query=${searchQuery}`))
-    } else {
-      dispatch(fetchMovies(`${ENDPOINT_DISCOVER}&page=${page}`))
-    }
+    const url = searchQuery
+      ? `${ENDPOINT_SEARCH}&page=${page}&query=${searchQuery}`
+      : `${ENDPOINT_DISCOVER}&page=${page}`
+  
+    dispatch(fetchMovies(url))
   }, [page, searchQuery, dispatch])
+  
 
-  const viewTrailer = (movie) => {
-    getMovie(movie.id)
+  const viewTrailer = async (movie) => {
+    await getMovie(movie.id)
     setOpen(true)
   }
 
@@ -71,24 +76,28 @@ const App = () => {
     getMovies()
   }, [getMovies])
 
+  const throttleScrollHandler = useRef(throttle(() => {
+    setPage(prev => prev + 1);
+  },1000));
+  
 
   useEffect(() => {
-    const handleScroll = () => {
+    const scrollHandler = () => {
       const isScrollingDown = window.scrollY > lastScrollY;
       setLastScrollY(window.scrollY);
+  
+      const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
 
-      const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 ;
-
-      if ((nearBottom && state.fetchStatus !== 'loading') && isScrollingDown) {
-        setPage(prev => prev + 1)
+      if (nearBottom && fetchStatus!=='loading' && isScrollingDown) {
+        throttleScrollHandler.current();
       }
-
     }
+    
+      window.addEventListener('scroll', scrollHandler);
+      return () => window.removeEventListener('scroll', scrollHandler);
+    }, [lastScrollY, fetchStatus]);
   
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [state.fetchStatus, lastScrollY])
-  
+
 
   return (
     <div className="App">
