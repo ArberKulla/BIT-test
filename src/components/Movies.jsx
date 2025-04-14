@@ -5,7 +5,7 @@ const Movies = ({ movies, viewTrailer }) => {
 
     return (
         <div class="movieList" data-testid="movies">
-            {movies.movies.results?.map((movie) => {
+            {movies.results?.map((movie) => {
                 return (
                     <Movie 
                         movie={movie} 

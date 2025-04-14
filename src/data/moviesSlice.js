@@ -23,12 +23,14 @@ const moviesSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder.addCase(fetchMovies.fulfilled, (state, action) => {
-            if (action.meta.arg.includes('&page=1') || !action.meta.arg.includes('&page=')) {
+            const params = new URLSearchParams(action.meta.arg.split('?')[1] || '');
+            const page = params.get('page');
+            if (page === '1' || page === null) {
                 state.movies = action.payload
             }  else {  
                 state.movies.results = [...state.movies.results,...action.payload.results]
-                state.fetchStatus = 'success'
             }
+            state.fetchStatus = 'success'
         }).addCase(fetchMovies.pending, (state) => {
             state.fetchStatus = 'loading'
         }).addCase(fetchMovies.rejected, (state) => {
